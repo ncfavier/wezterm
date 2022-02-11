@@ -78,6 +78,7 @@ xkbcommon = { version = "0.7.0", features = ["x11", "wayland"] }
 mio = {version="0.8", features=["os-ext"]}
 libc = "0.2"
 xcb-imdkit = { version="0.3", git="https://github.com/wez/xcb-imdkit-rs.git", rev="215ce4b08ac9c4822e541efd4f4ffb1062806051"}
+xcb-wm = {version="0.4.0", features=["icccm"]}
 zbus = "3.14"
 zvariant = "3.15"
 

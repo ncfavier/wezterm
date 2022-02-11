@@ -93,6 +93,10 @@ impl UserData for GuiWin {
                 Ok(())
             },
         );
+        methods.add_method("request_attention", |_, this, _: ()| {
+            this.window.set_attention_hint(true);
+            Ok(())
+        });
         methods.add_method("get_appearance", |_, _, _: ()| {
             Ok(Connection::get().unwrap().get_appearance().to_string())
         });

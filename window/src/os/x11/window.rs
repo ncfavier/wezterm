@@ -1395,6 +1395,24 @@ impl XWindowInner {
         self.set_fullscreen_hint(!fullscreen).ok();
     }
 
+    fn set_attention_hint(&mut self, new_state: bool) {
+        let conn = self.conn();
+        let icccm_conn = xcb_wm::icccm::Connection::connect(conn.conn());
+        let hintreply =
+            // Why the heck does this panic??
+            // https://github.com/arminfriedl/xcb-wm/issues/5
+            icccm_conn.wait_for_reply(icccm_conn.send_request(&xcb_wm::icccm::proto::GetWmHints::new(self.window_id)));
+        let mut hints = match hintreply {
+            Ok(h) => h.size_hints,
+            Err(_) => xcb_wm::icccm::WmHints::default(),
+        };
+        if hints.is_urgent() != new_state {
+            // Weird API...
+            hints.toggle_urgent();
+        }
+        icccm_conn.send_request(&xcb_wm::icccm::proto::SetWmHints::new(self.window_id, &mut hints));
+    }
+
     fn config_did_change(&mut self, config: &ConfigHandle) {
         let dpi_changed =
             self.config.dpi != config.dpi || self.config.dpi_by_screen != config.dpi_by_screen;
@@ -1704,6 +1722,13 @@ impl WindowOps for XWindow {
     fn restore(&self) {
         XConnection::with_window_inner(self.0, |inner| {
             inner.restore();
+            Ok(())
+        });
+    }
+
+    fn set_attention_hint(&self, new_state: bool) {
+        XConnection::with_window_inner(self.0, move |inner| {
+            inner.set_attention_hint(new_state);
             Ok(())
         });
     }
